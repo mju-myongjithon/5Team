@@ -2,8 +2,6 @@ import nudgeIcon from '../assets/home/nudge-icon.svg'
 import aiIcon from '../assets/fundingtab/ai-icon.svg'
 import chatNoteIcon from '../assets/fundingtab/chat-note-icon.svg'
 import { getDB } from './db'
-import { CAMPUS_CENTER, NUDGE_RADIUS_KM } from './schema'
-import { distanceKm } from '../lib/geo'
 import { commentsOf, currentCountOf, getUser, isMatched, reviewsReceivedBy } from './actions'
 
 export interface NotificationItem {
@@ -39,7 +37,6 @@ export function computeNotifications(email: string): NotificationItem[] {
   if (!me) return []
 
   const items: NotificationItem[] = []
-  const myLocation = { lat: me.lastLat ?? CAMPUS_CENTER.lat, lng: me.lastLng ?? CAMPUS_CENTER.lng }
   const myWishlist = db.wishlist[email] ?? []
   const now = Date.now()
   const today0 = startOfDay(now)
@@ -49,10 +46,11 @@ export function computeNotifications(email: string): NotificationItem[] {
     const almostThere = !isMatched(f) && !f.closed && f.targetCount - current === 1
     const participant = f.participants.includes(email)
     const wished = myWishlist.includes(f.id)
+    const interested = me.interests.length > 0 && me.interests.includes(f.category)
     const meetMs = f.meetAt ? new Date(f.meetAt).getTime() : NaN
 
     if (participant) {
-      if (almostThere) {
+      if (almostThere && interested) {
         items.push({
           id: `nudge-mine-${f.id}`,
           icon: nudgeIcon,
@@ -135,28 +133,20 @@ export function computeNotifications(email: string): NotificationItem[] {
           })
         }
       }
-    } else if (almostThere) {
-      const nearby = distanceKm(myLocation, { lat: f.lat, lng: f.lng }) <= NUDGE_RADIUS_KM
-      const interested = me.interests.includes(f.category)
-      if (wished || nearby || interested) {
-        const reason = wished
-          ? '찜한 펀딩'
-          : interested
-            ? `관심 태그 "${f.category}"`
-            : '주변 펀딩'
-        items.push({
-          id: `nudge-broadcast-${f.id}`,
-          icon: nudgeIcon,
-          title: wished ? '찜한 펀딩이 성사 임박!' : '딱 한 명만 더 모이면 출발해요!',
-          body: f.nudgeMessage
-            ? `${reason} · ${f.nudgeMessage}`
-            : `${reason} "${f.title}"가 목표 인원 1명만 남았어요. (${current}/${f.targetCount})`,
-          createdAt: f.createdAt,
-          to: `/funding/${f.id}`,
-          priority: wished ? 100 : interested ? 70 : 50,
-          kind: wished ? 'wishlist-almost' : 'almost',
-        })
-      }
+    } else if (almostThere && interested) {
+      const reason = `관심 태그 "${f.category}"`
+      items.push({
+        id: `nudge-broadcast-${f.id}`,
+        icon: nudgeIcon,
+        title: wished ? '찜한 관심 펀딩이 성사 임박!' : '관심 카테고리 펀딩이 성사 임박!',
+        body: f.nudgeMessage
+          ? `${reason} · ${f.nudgeMessage}`
+          : `${reason} "${f.title}"가 목표 인원 1명만 남았어요. (${current}/${f.targetCount})`,
+        createdAt: f.createdAt,
+        to: `/funding/${f.id}`,
+        priority: wished ? 100 : 70,
+        kind: wished ? 'wishlist-almost' : 'almost',
+      })
     }
   }
 

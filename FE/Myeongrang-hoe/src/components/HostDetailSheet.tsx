@@ -1,11 +1,14 @@
+import { useEffect, useState } from 'react'
 import BackButton from './BackButton'
 import hostAvatar from '../assets/hostdetail/host-avatar.svg'
 import sunlightIcon from '../assets/hostdetail/sunlight-icon.svg'
 import reviewerAvatar from '../assets/hostdetail/reviewer-avatar.svg'
+import aiIcon from '../assets/fundingtab/ai-icon.svg'
 import { useDB } from '../store/db'
 import { getCurrentUser, getFunding, getUser, reviewsReceivedBy } from '../store/actions'
 import { sunlightTier } from '../lib/sunlight'
 import { isBlocked } from '../store/moderation'
+import { fetchReviewSummary, type ApiReviewSummary } from '../lib/api'
 
 export default function HostDetailSheet({
   hostEmail,
@@ -24,6 +27,21 @@ export default function HostDetailSheet({
   const reviews = reviewsReceivedBy(hostEmail)
   const blocked = isBlocked(hostEmail)
   const isSelf = !!me && me.email.toLowerCase() === hostEmail.toLowerCase()
+  const [reviewSummary, setReviewSummary] = useState<ApiReviewSummary | null>(null)
+
+  useEffect(() => {
+    let alive = true
+    void fetchReviewSummary(hostEmail)
+      .then((summary) => {
+        if (alive) setReviewSummary(summary)
+      })
+      .catch(() => {
+        if (alive) setReviewSummary(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [hostEmail])
 
   if (!host) return null
 
@@ -113,6 +131,31 @@ export default function HostDetailSheet({
         </div>
 
         <div className="h-px w-full shrink-0 bg-[var(--hairline)]" />
+
+        {reviewSummary && (
+          <div className="mx-[16px] mt-[14px] flex shrink-0 items-start gap-[10px] rounded-[4px] bg-[var(--blue-tint)] p-[13px]">
+            <img src={aiIcon} alt="" className="size-[18px] shrink-0" />
+            <div className="flex min-w-0 flex-1 flex-col gap-[6px]">
+              <div className="flex items-center justify-between gap-[8px]">
+                <p className="text-[13px] font-bold text-[var(--blue-deep)]">AI 후기 요약</p>
+                <span className="shrink-0 rounded-full bg-white px-[7px] py-[2px] text-[10px] font-bold text-[var(--blue-deep)]">
+                  {reviewSummary.aiGenerated ? 'Gemini API' : '백업 분석'}
+                </span>
+              </div>
+              <p className="text-[12px] leading-[18px] text-[var(--heading)]">{reviewSummary.summary}</p>
+              {reviewSummary.highlights.slice(0, 2).map((item) => (
+                <p key={item} className="text-[12px] text-[var(--label)]">
+                  · {item}
+                </p>
+              ))}
+              {reviewSummary.riskNotes.slice(0, 1).map((item) => (
+                <p key={item} className="text-[12px] font-medium text-[var(--red)]">
+                  주의: {item}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="shrink-0 px-[16px] pt-[16px] pb-[8px]">
           <p className="text-[18px] font-bold text-[var(--heading)]">받은 리뷰</p>

@@ -246,7 +246,11 @@ export default function Home() {
   }
 
   const almostThere = nearbyFundings.find(
-    (f) => !isMatched(f) && !isClosed(f) && f.targetCount - currentCountOf(f) === 1,
+    (f) =>
+      !!me?.interests?.includes(f.category) &&
+      !isMatched(f) &&
+      !isClosed(f) &&
+      f.targetCount - currentCountOf(f) === 1,
   )
 
   // 성사 임박 문구는 서버(RiskAnalysisService)가 생성한 걸 우선 쓴다

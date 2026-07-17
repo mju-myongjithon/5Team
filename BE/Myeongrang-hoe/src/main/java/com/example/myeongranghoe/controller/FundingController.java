@@ -4,6 +4,7 @@ import com.example.myeongranghoe.config.UserContext;
 import com.example.myeongranghoe.dto.FundingResponse;
 import com.example.myeongranghoe.service.CommunityService;
 import com.example.myeongranghoe.service.FundingService;
+import com.example.myeongranghoe.service.SuccessPredictionService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -28,10 +29,16 @@ import java.util.Map;
 public class FundingController {
     private final FundingService fundingService;
     private final CommunityService communityService;
+    private final SuccessPredictionService successPredictionService;
 
-    public FundingController(FundingService fundingService, CommunityService communityService) {
+    public FundingController(
+            FundingService fundingService,
+            CommunityService communityService,
+            SuccessPredictionService successPredictionService
+    ) {
         this.fundingService = fundingService;
         this.communityService = communityService;
+        this.successPredictionService = successPredictionService;
     }
 
     @GetMapping
@@ -133,6 +140,14 @@ public class FundingController {
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", fundingService.nudgeMessage(id)
+        ));
+    }
+
+    @GetMapping("/{id}/success-prediction")
+    public ResponseEntity<Map<String, Object>> successPrediction(@PathVariable Long id) {
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "prediction", successPredictionService.predict(id)
         ));
     }
 

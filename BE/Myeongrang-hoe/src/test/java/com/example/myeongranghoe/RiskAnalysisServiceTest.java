@@ -3,6 +3,7 @@ package com.example.myeongranghoe;
 import com.example.myeongranghoe.domain.Funding;
 import com.example.myeongranghoe.domain.UserAccount;
 import com.example.myeongranghoe.repository.UserAccountRepository;
+import com.example.myeongranghoe.service.GeminiAiClient;
 import com.example.myeongranghoe.service.RiskAnalysisService;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +17,8 @@ import static org.mockito.Mockito.when;
 class RiskAnalysisServiceTest {
 
     private final UserAccountRepository userAccountRepository = mock(UserAccountRepository.class);
-    private final RiskAnalysisService riskAnalysisService = new RiskAnalysisService(userAccountRepository);
+    private final GeminiAiClient geminiAiClient = mock(GeminiAiClient.class);
+    private final RiskAnalysisService riskAnalysisService = new RiskAnalysisService(userAccountRepository, geminiAiClient);
 
     @Test
     void detailedFundingFromTrustedHostHasLowRisk() {

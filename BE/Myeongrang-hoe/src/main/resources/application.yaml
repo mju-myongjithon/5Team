@@ -2,7 +2,9 @@ spring:
   application:
     name: Myeongrang-hoe
   datasource:
-    url: ${DB_URL:jdbc:h2:file:./data/myeongrang;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE}
+    # 로컬 데모 기본값은 메모리 H2를 사용합니다.
+    # 파일 DB가 필요하면 DB_URL=jdbc:h2:file:./data/myeongrang;MODE=PostgreSQL;DB_CLOSE_DELAY=-1 로 실행하세요.
+    url: ${DB_URL:jdbc:h2:mem:myeongrang-dev;MODE=PostgreSQL;DB_CLOSE_DELAY=-1}
     driver-class-name: org.h2.Driver
     username: ${DB_USERNAME:sa}
     password: ${DB_PASSWORD:}
@@ -11,6 +13,7 @@ spring:
       enabled: true
       path: /h2-console
   jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: update
     open-in-view: false
@@ -53,6 +56,11 @@ app:
   kakao:
     # 카카오 Developers > 앱 키 > REST API 키 (정적 지도/대표 이미지용)
     rest-key: ${KAKAO_REST_API_KEY:}
+  ai:
+    gemini:
+      # Google AI Studio > API key. 없으면 기존 로컬 규칙 기반 분석으로 동작합니다.
+      api-key: ${GEMINI_API_KEY:}
+      model: ${GEMINI_MODEL:gemini-1.5-flash}
 
 
 logging:

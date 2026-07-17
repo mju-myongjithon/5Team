@@ -12,6 +12,14 @@ export function formatKakaoError(error: unknown): string {
   if (!getKakaoMapKey()) {
     return 'VITE_KAKAO_MAP_KEY 가 비어 있어요. FE/.env.local 에 JavaScript 키를 넣고 dev 서버를 재시작하세요.'
   }
+  const isLoadEvent =
+    (typeof Event !== 'undefined' && error instanceof Event) ||
+    String(error ?? '') === '[object Event]'
+
+  if (isLoadEvent) {
+    return '카카오맵 SDK 로딩에 실패했어요. Kakao Developers에서 JavaScript 키를 사용했는지, Web 플랫폼 도메인에 http://localhost:5173 과 http://127.0.0.1:5173 이 등록됐는지 확인한 뒤 dev 서버를 재시작하세요.'
+  }
+
   const message =
     error instanceof Error
       ? error.message
@@ -20,7 +28,7 @@ export function formatKakaoError(error: unknown): string {
         : String(error ?? '')
 
   if (/appkey|app key|unauthorized|401|403|invalid/i.test(message)) {
-    return '카카오 앱 키가 올바르지 않거나 권한이 없습니다. JavaScript 키인지, 플랫폼에 localhost / 127.0.0.1 이 등록됐는지 확인하세요.'
+    return '카카오 앱 키가 올바르지 않거나 권한이 없습니다. JavaScript 키인지, Web 플랫폼 도메인에 http://localhost:5173 과 http://127.0.0.1:5173 이 등록됐는지 확인하세요.'
   }
   if (message) {
     return message

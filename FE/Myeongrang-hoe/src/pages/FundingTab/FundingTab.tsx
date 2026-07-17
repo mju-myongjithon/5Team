@@ -35,6 +35,7 @@ import FundingCover from '../../components/FundingCover'
 import { useKakao } from '../../lib/kakao'
 import { shareFunding } from '../../lib/share'
 import { buildGoogleCalendarUrl, downloadIcs } from '../../lib/calendar'
+import { fetchSuccessPrediction, type ApiSuccessPrediction } from '../../lib/api'
 import shareBtn from '../../assets/fundingtab/share-btn.svg'
 import UserAvatar from '../../components/UserAvatar'
 import chatNoteIcon from '../../assets/fundingtab/chat-note-icon.svg'
@@ -82,6 +83,8 @@ export default function FundingTab() {
   const [draft, setDraft] = useState('')
   const [commentSending, setCommentSending] = useState(false)
   const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [prediction, setPrediction] = useState<ApiSuccessPrediction | null>(null)
+  const [predictionLoading, setPredictionLoading] = useState(false)
 
   useEffect(() => {
     const numId = Number(id)
@@ -89,6 +92,24 @@ export default function FundingTab() {
       void syncFundingDetail(numId)
     }
   }, [id])
+
+  useEffect(() => {
+    let alive = true
+    setPredictionLoading(true)
+    void fetchSuccessPrediction(funding.id)
+      .then((result) => {
+        if (alive) setPrediction(result)
+      })
+      .catch(() => {
+        if (alive) setPrediction(null)
+      })
+      .finally(() => {
+        if (alive) setPredictionLoading(false)
+      })
+    return () => {
+      alive = false
+    }
+  }, [funding.id])
 
   async function handleAddComment() {
     const content = draft.trim()
@@ -441,6 +462,51 @@ export default function FundingTab() {
               <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
                 <p className="text-[14px] font-bold text-[var(--primary-deep)]">AI 성사 임박 넛지</p>
                 <p className="text-[13px] text-[var(--label)]">{nudgeMessage}</p>
+              </div>
+            </div>
+          )}
+
+          {(prediction || predictionLoading) && (
+            <div className="flex w-full items-start gap-[11px] rounded-[4px] border border-[var(--blue-deep)] bg-white p-[15px] shadow-[0px_3px_10px_rgba(0,0,0,0.05)]">
+              <img src={aiIcon} alt="" className="size-[19px] shrink-0" />
+              <div className="flex min-w-0 flex-1 flex-col gap-[9px]">
+                <div className="flex items-center justify-between gap-[10px]">
+                  <p className="text-[14px] font-bold text-[var(--blue-deep)]">AI 성사율 예측</p>
+                  {prediction && (
+                    <span className="shrink-0 rounded-full bg-[var(--blue-tint)] px-[8px] py-[2px] text-[11px] font-bold text-[var(--blue-deep)]">
+                      {prediction.aiGenerated ? 'Gemini API' : '백업 분석'}
+                    </span>
+                  )}
+                </div>
+                {predictionLoading && !prediction ? (
+                  <p className="text-[13px] text-[var(--label)]">AI가 펀딩 정보를 분석하고 있어요.</p>
+                ) : prediction ? (
+                  <>
+                    <div className="flex items-center gap-[10px]">
+                      <div className="h-[8px] flex-1 overflow-hidden rounded-full bg-[var(--hairline)]">
+                        <div
+                          className="h-full rounded-full bg-[var(--blue-deep)]"
+                          style={{ width: `${Math.max(0, Math.min(100, prediction.score))}%` }}
+                        />
+                      </div>
+                      <p className="shrink-0 text-[13px] font-bold text-[var(--heading)]">
+                        {prediction.score}점 · {prediction.level}
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-[4px]">
+                      {prediction.reasons.slice(0, 2).map((reason) => (
+                        <p key={reason} className="text-[13px] text-[var(--label)]">
+                          · {reason}
+                        </p>
+                      ))}
+                      {prediction.recommendations.slice(0, 1).map((tip) => (
+                        <p key={tip} className="text-[13px] font-medium text-[var(--heading)]">
+                          제안: {tip}
+                        </p>
+                      ))}
+                    </div>
+                  </>
+                ) : null}
               </div>
             </div>
           )}

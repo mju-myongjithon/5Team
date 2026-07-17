@@ -78,6 +78,21 @@ export type ApiReview = {
   createdAt: number
 }
 
+export type ApiSuccessPrediction = {
+  score: number
+  level: string
+  reasons: string[]
+  recommendations: string[]
+  aiGenerated: boolean
+}
+
+export type ApiReviewSummary = {
+  summary: string
+  highlights: string[]
+  riskNotes: string[]
+  aiGenerated: boolean
+}
+
 export type FundingInputBody = {
   category: string
   title: string
@@ -268,6 +283,12 @@ export async function fetchUserReviews(email: string): Promise<ApiReview[]> {
   return (payload?.reviews as ApiReview[]) ?? []
 }
 
+export async function fetchReviewSummary(email: string): Promise<ApiReviewSummary> {
+  const { response, payload } = await request(`/api/users/reviews/summary?email=${encodeURIComponent(email)}`)
+  if (!response.ok || !payload?.summary) throw new Error(errorMessage(payload, '후기 요약을 불러오지 못했어요.'))
+  return payload.summary as ApiReviewSummary
+}
+
 // ---------- fundings ----------
 
 export async function fetchFundings(params?: {
@@ -387,6 +408,12 @@ export async function fetchNudge(fundingId: number): Promise<string> {
   const { response, payload } = await request(`/api/fundings/${fundingId}/nudge`)
   if (!response.ok) throw new Error(errorMessage(payload, '넛지 메시지를 불러오지 못했어요.'))
   return typeof payload?.message === 'string' ? payload.message : ''
+}
+
+export async function fetchSuccessPrediction(fundingId: number): Promise<ApiSuccessPrediction> {
+  const { response, payload } = await request(`/api/fundings/${fundingId}/success-prediction`)
+  if (!response.ok || !payload?.prediction) throw new Error(errorMessage(payload, '성사율 예측을 불러오지 못했어요.'))
+  return payload.prediction as ApiSuccessPrediction
 }
 
 export async function fetchChat(fundingId: number): Promise<ApiChatMessage[]> {

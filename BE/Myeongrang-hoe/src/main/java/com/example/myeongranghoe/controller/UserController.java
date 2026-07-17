@@ -3,6 +3,7 @@ package com.example.myeongranghoe.controller;
 import com.example.myeongranghoe.config.UserContext;
 import com.example.myeongranghoe.dto.UserResponse;
 import com.example.myeongranghoe.service.CommunityService;
+import com.example.myeongranghoe.service.ReviewSummaryService;
 import com.example.myeongranghoe.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,10 +21,16 @@ import java.util.Map;
 public class UserController {
     private final UserService userService;
     private final CommunityService communityService;
+    private final ReviewSummaryService reviewSummaryService;
 
-    public UserController(UserService userService, CommunityService communityService) {
+    public UserController(
+            UserService userService,
+            CommunityService communityService,
+            ReviewSummaryService reviewSummaryService
+    ) {
         this.userService = userService;
         this.communityService = communityService;
+        this.reviewSummaryService = reviewSummaryService;
     }
 
     @GetMapping("/me")
@@ -75,6 +82,14 @@ public class UserController {
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "reviews", communityService.reviewsForUser(email)
+        ));
+    }
+
+    @GetMapping("/reviews/summary")
+    public ResponseEntity<Map<String, Object>> reviewSummary(@RequestParam String email) {
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "summary", reviewSummaryService.summarize(email)
         ));
     }
 
