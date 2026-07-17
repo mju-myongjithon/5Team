@@ -60,7 +60,7 @@ app:
     gemini:
       # Google AI Studio > API key. 없으면 기존 로컬 규칙 기반 분석으로 동작합니다.
       api-key: ${GEMINI_API_KEY:}
-      model: ${GEMINI_MODEL:gemini-1.5-flash}
+      model: ${GEMINI_MODEL:gemini-2.0-flash}
 
 
 logging:
