@@ -36,7 +36,7 @@ spring:
       max-request-size: 4MB
 
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${PORT:${SERVER_PORT:8080}}
 
 # 실제 SMTP: 환경변수 MAIL_USERNAME / MAIL_PASSWORD (Gmail 앱 비밀번호 권장)
 # MAIL_FROM 미설정 시 username 을 발신자로 사용합니다.
