@@ -60,7 +60,7 @@ export default function ChatList() {
   }, [me?.email, rooms.map((r) => r.id).join(',')])
 
   return (
-    <div className="relative flex h-screen flex-col overflow-hidden bg-white">
+    <div className="relative flex h-dvh flex-col overflow-hidden bg-white">
       <PageHeader title="채팅" />
 
       <main className="flex-1 overflow-y-auto">

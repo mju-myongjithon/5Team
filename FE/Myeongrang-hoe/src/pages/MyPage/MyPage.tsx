@@ -112,7 +112,7 @@ export default function MyPage() {
   ]
 
   return (
-    <div className="relative flex h-screen flex-col overflow-hidden bg-white">
+    <div className="relative flex h-dvh flex-col overflow-hidden bg-white">
       <PageHeader title="마이페이지" />
 
       <main className="flex-1 overflow-y-auto">

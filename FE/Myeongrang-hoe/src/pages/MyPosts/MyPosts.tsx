@@ -37,7 +37,7 @@ export default function MyPosts() {
   }, [me?.email])
 
   return (
-    <div className="relative flex h-screen flex-col overflow-hidden bg-white">
+    <div className="relative flex h-dvh flex-col overflow-hidden bg-white">
       <PageHeader title="내가 쓴 글" />
 
       <main className="relative flex-1 overflow-y-auto">

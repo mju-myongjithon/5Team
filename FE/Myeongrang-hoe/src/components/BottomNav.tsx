@@ -42,7 +42,10 @@ export default function BottomNav({ active }: { active: NavKey }) {
     : 0
 
   return (
-    <nav className="flex h-[77px] w-full shrink-0 border-t border-[var(--hairline)] bg-white">
+    <nav
+      className="flex min-h-[77px] w-full shrink-0 border-t border-[var(--hairline)] bg-white"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+    >
       {items.map((item) => {
         const isActive = item.key === active
 
